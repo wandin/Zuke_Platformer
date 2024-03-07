@@ -1,9 +1,11 @@
 function love.load()
     love.window.setMode(1280, 768,nil, false)
 
-    anim8 = require 'libraries/anim8/anim8'
-    sti = require 'libraries/Simple-Tiled-Implementation/sti'
+    gamefont = love.graphics.newFont(20)
+
+        sti = require 'libraries/Simple-Tiled-Implementation/sti'
     cameraFile = require 'libraries/hump/camera'
+    anim8 = require('Libraries/anim8/anim8')
 
     cam = cameraFile()
 
@@ -18,6 +20,7 @@ function love.load()
 
     sprites = {}
     sprites.background = love.graphics.newImage('sprites/background.png')
+    sprites.background2 = love.graphics.newImage('sprites/background2.png')
     sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
     sprites.enemySheet = love.graphics.newImage('sprites/enemySheet.png')
 
@@ -52,7 +55,7 @@ function love.load()
     flagX = 0
     flagY = 0
 
-    currentLevel = "level1"
+    currentLevel = "level2"
 
     saveData = {}
     saveData.currentLevel = currentLevel
@@ -102,10 +105,9 @@ function love.update(deltaTime)
 
     if player.body then
         local px, py = player:getPosition()
-        cam:lookAt(px + 580 , love.graphics.getHeight()/2)
+        cam:lookAt(px + 580 , love.graphics.getHeight()/2 - 150)
     end
     
-
     local colliders = world:queryCircleArea(flagX, flagY, 10, {'Player'})
        if #colliders > 0 then
         if saveData.currentLevel == "level1" then
@@ -117,11 +119,23 @@ function love.update(deltaTime)
 end
 
 function love.draw()
-    love.graphics.draw(sprites.background, 0 ,0,nil, love.graphics:getWidth() / love.graphics:getWidth() + 0.5, love.graphics.getHeight() / love.graphics.getHeight())
+
+    if saveData.currentLevel == "level1" then
+        love.graphics.draw(sprites.background, 0 ,0,nil, love.graphics:getWidth() / love.graphics:getWidth() + 0.5, love.graphics.getHeight() / love.graphics.getHeight())
+    else
+        love.graphics.draw(sprites.background2, 0 ,0,nil, love.graphics:getWidth() / love.graphics:getWidth() + 0.5, love.graphics.getHeight() / love.graphics.getHeight())
+    end
+
+    love.graphics.setFont(gamefont)
+    love.graphics.print("D - MOVE PARA FRENTE", 200, 10)
+    love.graphics.print("A - MOVE PARA TRAS", 200, 30)
+    love.graphics.print("SPAÇO - PULA", 200, 50)
+
+
 
     cam:attach()
         gameMap:drawLayer(gameMap.layers["Tiles"])
-        -- world:draw() -- draw the debug lines
+        --world:draw() -- draw the debug lines
         drawPlayer()
         drawEnemies()
     cam:detach()
@@ -158,6 +172,7 @@ function spawnPlatform(x, y, width, height)
 end
 
 function destroyAll()
+
     local i = #platforms
     while i > -1 do
         if platforms[i] ~= nil then
@@ -169,7 +184,7 @@ function destroyAll()
 
     local i = #enemies
     while i > -1 do
-        if enemies[i] ~= nil then
+        if enemies.body and enemies[i] ~= nil then
             enemies[i]:destroy()
         end
         table.remove(enemies, i)
